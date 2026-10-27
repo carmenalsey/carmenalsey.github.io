@@ -3,17 +3,17 @@
   "sources": {
     "baddiehub.com": {
       "active": true,
-      "next_page": 2,
+      "next_page": 3,
       "next_offset": 0,
-      "scanned": 100,
-      "created": 100
+      "scanned": 200,
+      "created": 200
     },
     "gotanynudes.com": {
       "active": true,
-      "next_page": 2,
+      "next_page": 3,
       "next_offset": 0,
-      "scanned": 100,
-      "created": 96
+      "scanned": 200,
+      "created": 194
     }
   }
 }
