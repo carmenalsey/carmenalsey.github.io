@@ -1,0 +1,137 @@
+name: Sync WordPress Videos
+
+on:
+  workflow_dispatch:
+    inputs:
+      sync_mode:
+        description: "full = resume/import all posts; recent = newest 100 posts per website (200 total)"
+        required: true
+        type: choice
+        options:
+          - recent
+          - full
+        default: recent
+      reset_catalog:
+        description: "DANGEROUS: clear videos.json and all thumbnails before starting"
+        required: true
+        type: boolean
+        default: false
+
+  schedule:
+    - cron: "7,17,27,37,47,57 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-wordpress-videos
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    env:
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system tools and Python dependencies
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          echo "[SETUP] Python version:"
+          python --version
+
+          echo "[SETUP] Installing Pillow..."
+          python -m pip install --disable-pip-version-check Pillow
+
+          echo "[SETUP] Installing ffmpeg/ffprobe..."
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+          echo "[SETUP] Verifying ffprobe..."
+          ffprobe -version
+
+          echo "[SETUP] Dependencies ready."
+
+      - name: Sync videos (one batch per run)
+        shell: bash
+        env:
+          SYNC_MODE: ${{ github.event.inputs.sync_mode || 'recent' }}
+          RESET_CATALOG: ${{ github.event.inputs.reset_catalog || 'false' }}
+        run: |
+          set -Eeuo pipefail
+
+          echo "========================================"
+          echo "SYNC STARTED"
+          echo "Mode: $SYNC_MODE"
+          echo "Reset catalog: $RESET_CATALOG"
+          echo "========================================"
+
+          args=()
+
+          if [[ "$SYNC_MODE" == "full" ]]; then
+            args+=(--full)
+          fi
+
+          if [[ "$RESET_CATALOG" == "true" ]]; then
+            args+=(--reset --full)
+          fi
+
+          echo "[SYNC] Checking script..."
+          test -f scripts/sync_videos.py
+
+          echo "[SYNC] Starting Python script..."
+          python -u -X faulthandler scripts/sync_videos.py --batch-size 100 "${args[@]}"
+
+          echo "[SYNC] Python script completed successfully."
+          echo "[SYNC] Review the log line 'Rejected/unavailable video URLs skipped' for CDN-denied or invalid MP4 sources."
+
+      - name: Commit checkpoint, catalog and thumbnails
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          echo "[COMMIT] Checking for changes..."
+
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "[COMMIT] No changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add assets/data/videos.json \
+                  assets/data/.video_import_state.json \
+                  assets/thumb
+
+          if git diff --cached --quiet; then
+            echo "[COMMIT] No staged changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Batch sync WordPress videos"
+
+          echo "[COMMIT] Fetching latest remote changes..."
+          git fetch origin main
+
+          echo "[COMMIT] Rebasing onto latest main..."
+          git rebase origin/main
+
+          echo "[COMMIT] Pushing changes..."
+          git push origin HEAD:main
+
+          echo "[COMMIT] Finished successfully."
