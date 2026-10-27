@@ -1,0 +1,456 @@
+/* =====================================================
+   HYLOOKS v1.1 FINAL PRODUCTION (MASTER LOCKED)
+   Homepage CSS
+   ===================================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+    --bg:#080808;
+    --header:#0B0B0B;
+    --card:#111111;
+    --text:#FFFFFF;
+    --text2:#8A8A8A;
+    --line:#1A1A1A;
+    --search:#141414;
+    --yellow:#ff9000;
+
+    --radius:14px;
+}
+
+html,body{
+    width:100%;
+    background:var(--bg);
+    color:var(--text);
+    font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+/* ================= HEADER ================= */
+
+.topbar{
+
+    width:100%;
+    height:64px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 18px;
+
+    padding:0 20px;
+
+    background:var(--header);
+
+    border-bottom:1px solid #101010;
+
+    position:sticky;
+    top:0;
+    z-index:999;
+
+}
+
+.logo{
+
+    color:var(--yellow);
+
+    text-decoration:none;
+
+    font-size:27px;
+    font-weight:800;
+    letter-spacing:-.5px;
+
+}
+
+.search-box{
+
+    width:270px;
+    flex-shrink:0;
+
+}
+
+.search-box input{
+
+    width:100%;
+    height:38px;
+
+    border:none;
+    outline:none;
+
+    border-radius:999px;
+
+    background:var(--search);
+
+    color:white;
+
+    padding:0 18px;
+
+    font-size:13px;
+
+}
+
+.search-box input::placeholder{
+    color:#666;
+}
+
+/* ================= CONTAINER ================= */
+
+.container{
+
+    width:100%;
+    max-width:1550px;
+
+    margin:auto;
+
+    padding:18px;
+
+}
+
+/* ================= VIDEO GRID ================= */
+
+.video-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+
+    gap:20px;
+
+}
+
+/* ================= CARD ================= */
+
+.video-card{
+
+    width:100%;
+
+}
+
+.video-link{
+
+    text-decoration:none;
+    color:white;
+
+}
+
+/* Thumbnail */
+
+.thumb-box{
+
+    position:relative;
+
+    width:100%;
+
+    aspect-ratio:16/9;
+
+    background:#151515;
+
+    border-radius:14px;
+
+    overflow:hidden;
+
+}
+
+.thumb{
+
+    width:100%;
+    height:100%;
+
+    object-fit:cover;
+
+    transition:.25s ease;
+
+    display:block;
+
+}
+
+.video-card:hover .thumb{
+
+    transform:scale(1.05);
+
+}
+
+/* Duration */
+
+.duration{
+
+    position:absolute;
+
+    right:8px;
+    bottom:8px;
+
+    padding:3px 7px;
+
+    background:rgba(0,0,0,.75);
+
+    border-radius:5px;
+
+    font-size:11px;
+    font-weight:600;
+
+}
+
+/* Meta */
+
+.meta{
+
+    margin-top:10px;
+
+}
+
+.title{
+
+    font-size:15px;
+    font-weight:700;
+
+    line-height:1.35;
+
+    color:white;
+
+    display:-webkit-box;
+
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+
+    overflow:hidden;
+
+    min-height:40px;
+
+}
+
+.views{
+
+    margin-top:4px;
+
+    font-size:13px;
+
+    color:var(--text2);
+
+}
+
+/* ================= LOADING ================= */
+
+.loading-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+
+    gap:20px;
+
+}
+
+.loading-card{
+
+    aspect-ratio:16/10;
+
+    border-radius:14px;
+
+    background:linear-gradient(
+        90deg,
+        #141414 0%,
+        #1D1D1D 50%,
+        #141414 100%
+    );
+
+    background-size:300% 100%;
+
+    animation:loading 1.3s infinite;
+
+}
+
+@keyframes loading{
+
+    from{
+        background-position:300% 0;
+    }
+
+    to{
+        background-position:-300% 0;
+    }
+
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:1280px){
+
+    .video-grid,
+    .loading-grid{
+        grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    }
+
+}
+
+@media(max-width:768px){
+
+    .topbar{
+
+        padding:0 14px;
+
+        height:55px;
+
+    }
+
+    .logo{
+        font-size:24px;
+    }
+
+    .search-box{
+        width:170px;
+    }
+
+    .container{
+        padding:14px;
+    }
+
+    .video-grid,
+    .loading-grid{
+
+        grid-template-columns:repeat(2,1fr);
+
+        gap:14px;
+
+    }
+
+    .title{
+        font-size:14px;
+    }
+
+    .views{
+        font-size:12px;
+    }
+
+}
+
+@media(max-width:480px){
+
+    .search-box{
+        width:145px;
+    }
+
+    .search-box input{
+
+        height:34px;
+
+        font-size:12px;
+
+    }
+
+}
+
+/* ================= CATEGORY NAVIGATION IN HEADER ================= */
+.category-bar {
+    position: static;
+    z-index: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 auto;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    margin: 0 0 0 55px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    overflow: hidden;
+}
+.category-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.category-chip {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #303030;
+    border-radius: 999px;
+    padding: 7px 12px;
+    background: #151515;
+    color: #ddd;
+    font: inherit;
+    font-size: 12px;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.category-chip:hover,
+.category-chip.active {
+    color: #080808;
+    background: var(--yellow);
+    border-color: var(--yellow);
+}
+.category-dropdown-wrap { flex: 0 0 auto; }
+.category-dropdown {
+    width: 134px;
+    max-width: 16vw;
+    border: 1px solid #303030;
+    border-radius: 999px;
+    padding: 7px 24px 7px 10px;
+    background: #151515;
+    color: #ddd;
+    font: inherit;
+    font-size: 12px;
+    line-height: 1.2;
+    cursor: pointer;
+}
+.category-dropdown:focus-visible,
+.category-chip:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+@media (max-width: 1100px) {
+    .topbar { gap: 10px; padding-left: 14px; padding-right: 14px; }
+    .category-bar { gap: 5px; }
+    .category-filters { gap: 5px; }
+    .category-chip { padding: 6px 8px; font-size: 11px; }
+    .category-dropdown { width: 112px; padding: 6px 18px 6px 8px; font-size: 11px; }
+}
+@media (max-width: 768px) {
+    .topbar { height: 55px; gap: 7px; padding: 0 10px; }
+    .logo { font-size: 21px; flex: 0 0 auto; }
+    .category-bar { gap: 4px; }
+    .category-filters { gap: 4px; }
+    .category-chip { padding: 6px 7px; font-size: 10px; }
+    .category-dropdown { width: 94px; max-width: 25vw; padding: 6px 15px 6px 7px; font-size: 10px; }
+    .search-box { width: clamp(78px, 19vw, 145px); flex: 0 1 clamp(78px, 19vw, 145px); }
+    .search-box input { padding: 0 9px; font-size: 11px; }
+}
+@media (max-width: 480px) {
+    .topbar { gap: 5px; padding: 0 7px; }
+    .logo { font-size: 18px; letter-spacing: -.7px; }
+    .category-bar { gap: 3px; }
+    .category-filters { gap: 3px; }
+    .category-chip { padding: 5px 6px; font-size: 9px; }
+    .category-dropdown { width: 78px; max-width: 22vw; padding: 5px 12px 5px 5px; font-size: 9px; }
+    .search-box { width: clamp(65px, 18vw, 90px); flex: 0 1 clamp(65px, 18vw, 90px); }
+    .search-box input { height: 32px; padding: 0 7px; font-size: 10px; }
+}
+
+
+
+/* Buddie Fun image logo — keep existing header layout and spacing */
+.topbar .logo{display:flex;align-items:center;flex:0 0 auto;line-height:1}
+.topbar .logo img{display:block;width:160px;height:auto;max-height:48px;object-fit:contain}
+@media(max-width:768px){.topbar .logo img{width:120px;max-height:42px}}
+@media(max-width:480px){.topbar .logo img{width:94px;max-height:35px}}

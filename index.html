@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuddieFun</title>
+
+  <link rel="icon" href="assets/icon/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script>
+    (function(s) {
+      s.dataset.zone = '11945257';
+      s.src = 'https://al5sm.com/tag.min.js';
+    })([document.documentElement, document.body]
+      .filter(Boolean)
+      .pop()
+      .appendChild(document.createElement('script')));
+  </script>
+
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="topbar">
+
+    <a href="index.html" class="logo" aria-label="Buddie Fun — Home"><img src="assets/icon/logo.webp" alt="Buddie Fun" width="160" height="50"></a>
+
+    <!-- CATEGORY FILTERS: kept inside the header, beside the logo -->
+    <nav class="category-bar" aria-label="Video categories">
+      <div id="categoryFilters" class="category-filters" aria-live="polite"></div>
+      <label class="category-dropdown-wrap">
+        <span class="sr-only">All categories</span>
+        <select id="allCategoriesSelect" class="category-dropdown" aria-label="All categories">
+          <option value="">All categories</option>
+        </select>
+      </label>
+    </nav>
+
+    <div class="search-box">
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Search video..."
+        autocomplete="off">
+    </div>
+
+  </header>
+
+  <!-- VIDEO GRID -->
+  <main class="container">
+
+    <section id="videoGrid" class="video-grid" aria-live="polite"></section>
+
+    <!-- Pagination: 30 videos per page -->
+    <nav id="videoPagination" class="video-pagination" aria-label="Video pages" hidden>
+      <button id="prevPage" type="button" disabled>Previous</button>
+      <span id="pageInfo" aria-live="polite">Page 1</span>
+      <button id="nextPage" type="button" disabled>Next</button>
+    </nav>
+
+    <div id="loadingGrid" class="loading-grid">
+
+      <div class="loading-card"></div>
+      <div class="loading-card"></div>
+      <div class="loading-card"></div>
+      <div class="loading-card"></div>
+      <div class="loading-card"></div>
+      <div class="loading-card"></div>
+      <div class="loading-card"></div>
+      <div class="loading-card"></div>
+
+    </div>
+
+  </main>
+
+
+  <!-- VIDEO TEMPLATE -->
+  <template id="videoTemplate">
+
+    <article class="video-card">
+
+      <a class="video-link">
+
+        <div class="thumb-box">
+
+          <img class="thumb" loading="lazy">
+
+          <span class="duration"></span>
+
+        </div>
+
+        <div class="meta">
+
+          <h3 class="title"></h3>
+
+          <p class="views"></p>
+
+        </div>
+
+      </a>
+
+    </article>
+
+  </template>
+
+
+  <script src="assets/js/search.js"></script>
+  <script src="assets/js/app.js"></script>
+
+  <!-- Pagination: 30 video cards per page; compatible with app.js/search.js -->
+  <style>
+    .video-pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin: 28px 0;
+    }
+    .video-pagination[hidden] { display: none !important; }
+    .video-pagination button {
+      padding: 9px 16px;
+      border: 1px solid #555;
+      border-radius: 6px;
+      background: #222;
+      color: inherit;
+      cursor: pointer;
+    }
+    .video-pagination button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+    .video-pagination #pageInfo { font-size: .95rem; }
+  </style>
+  <script>
+    (() => {
+      const PAGE_SIZE = 30;
+      const grid = document.getElementById("videoGrid");
+      const pagination = document.getElementById("videoPagination");
+      const prevButton = document.getElementById("prevPage");
+      const nextButton = document.getElementById("nextPage");
+      const pageInfo = document.getElementById("pageInfo");
+      const searchInput = document.getElementById("searchInput");
+
+      let currentPage = 1;
+      let updateQueued = false;
+      let lastCardCount = 0;
+
+      // app.js/search.js filters by rebuilding the grid, not by hidden/display.
+      // Do NOT use getComputedStyle(card).display here: pagination itself hides
+      // off-page cards, which would make the script incorrectly think there is
+      // only one page.
+      function getMatchingCards() {
+        return Array.from(grid.querySelectorAll(".video-card"))
+          .filter(card => card.style.display !== "none");
+      }
+
+      function renderPagination(resetPage = false) {
+        if (resetPage) currentPage = 1;
+
+        const cards = getMatchingCards();
+        const totalPages = Math.max(1, Math.ceil(cards.length / PAGE_SIZE));
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const start = (currentPage - 1) * PAGE_SIZE;
+        cards.forEach((card, index) => {
+          card.hidden = index < start || index >= start + PAGE_SIZE;
+        });
+
+        pagination.hidden = cards.length <= PAGE_SIZE;
+        prevButton.disabled = currentPage <= 1;
+        nextButton.disabled = currentPage >= totalPages;
+        pageInfo.textContent = cards.length
+          ? "Page " + currentPage + " of " + totalPages + " · " + cards.length + " videos"
+          : "No videos found";
+        lastCardCount = grid.querySelectorAll(".video-card").length;
+      }
+
+      prevButton.addEventListener("click", () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderPagination();
+          grid.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+
+      nextButton.addEventListener("click", () => {
+        const totalPages = Math.max(1, Math.ceil(getMatchingCards().length / PAGE_SIZE));
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderPagination();
+          grid.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+
+      // Reset to page 1 when the search changes.
+      if (searchInput) {
+        searchInput.addEventListener("input", () => {
+          currentPage = 1;
+          queueUpdate();
+        });
+      }
+
+      function queueUpdate() {
+        if (updateQueued) return;
+        updateQueued = true;
+        requestAnimationFrame(() => {
+          updateQueued = false;
+          renderPagination();
+        });
+      }
+
+      // Watch card creation/removal only. Do not observe attributes: pagination
+      // changes the hidden attribute on cards and would trigger unnecessary work.
+      const observer = new MutationObserver(() => {
+        const count = grid.querySelectorAll(".video-card").length;
+        if (count !== lastCardCount) {
+          currentPage = 1;
+        }
+        queueUpdate();
+      });
+      observer.observe(grid, { childList: true, subtree: true });
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => renderPagination(true), { once: true });
+      } else {
+        renderPagination(true);
+      }
+      queueUpdate();
+    })();
+  </script>
+
+  <!-- Histats.com  START  (aync)-->
+<script type="text/javascript">var _Hasync= _Hasync|| [];
+_Hasync.push(['Histats.start', '1,4425861,4,0,0,0,00010000']);
+_Hasync.push(['Histats.fasi', '1']);
+_Hasync.push(['Histats.track_hits', '']);
+(function() {
+var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
+hs.src = ('//s10.histats.com/js15_as.js');
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+})();</script>
+<noscript><a href="/" target="_blank"><img  src="//sstatic1.histats.com/0.gif?4425861&101" alt="" border="0"></a></noscript>
+<!-- Histats.com  END  -->
+
+
+  <!-- Basic browser shortcut/context-menu deterrent -->
+  <script>
+    document.addEventListener("contextmenu", function (event) {
+      event.preventDefault();
+    });
+
+    document.addEventListener("keydown", function (event) {
+      const key = (event.key || "").toLowerCase();
+      if (event.ctrlKey && key === "u") {
+        event.preventDefault();
+      }
+    });
+  </script>
+
+</body>
+</html>
