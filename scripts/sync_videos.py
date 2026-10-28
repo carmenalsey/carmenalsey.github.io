@@ -356,11 +356,54 @@ def empty_catalog():
     atomic_json(STATE, fresh_state())
     log("RESET complete: catalog and thumbnails cleared; import starts at page 1.")
 
+API_CHUNK_SIZE = 25
+API_TIMEOUT = 45
+API_RETRIES = 5
+
+def fetch_api(url):
+    """Retry slow WordPress API responses without changing thumbnail/video fetch behavior."""
+    last = None
+    for attempt in range(API_RETRIES + 1):
+        try:
+            req = Request(url, headers={
+                "User-Agent": USER_AGENT,
+                "Accept": "application/json",
+                "Connection": "close",
+            })
+            with urlopen(req, timeout=API_TIMEOUT) as response:
+                return json.loads(response.read())
+        except HTTPError as exc:
+            # A page past the last WordPress page is a normal end-of-import signal.
+            if exc.code == 400:
+                raise
+            last = exc
+            if exc.code not in (408, 425, 429, 500, 502, 503, 504):
+                raise
+        except (URLError, TimeoutError, OSError, ValueError) as exc:
+            last = exc
+        if attempt < API_RETRIES:
+            delay = min(2 ** attempt, 30)
+            log(f"WordPress API retry {attempt+1}/{API_RETRIES}: {url} ({last}); wait {delay}s")
+            time.sleep(delay)
+    raise RuntimeError(f"WordPress API failed after retries: {url}: {last}")
+
 def get_page(api, page_number):
-    url = f"{api}?per_page={PER_PAGE}&page={page_number}&_embed=1&orderby=date&order=desc"
-    raw, _ = fetch(url)
-    posts = json.loads(raw)
-    if not isinstance(posts, list): raise RuntimeError(f"Unexpected WordPress API response on page {page_number}")
+    """Keep existing 100-post checkpoints while requesting four smaller 25-post pages."""
+    posts = []
+    for chunk in range(PER_PAGE // API_CHUNK_SIZE):
+        api_page = (page_number - 1) * (PER_PAGE // API_CHUNK_SIZE) + chunk + 1
+        url = f"{api}?per_page={API_CHUNK_SIZE}&page={api_page}&_embed=1&orderby=date&order=desc"
+        try:
+            result = fetch_api(url)
+        except HTTPError as exc:
+            if exc.code == 400 and posts:
+                return posts
+            raise
+        if not isinstance(result, list):
+            raise RuntimeError(f"Unexpected WordPress API response on page {api_page}")
+        posts.extend(result)
+        if len(result) < API_CHUNK_SIZE:
+            break
     return posts
 
 def collect_posts(api, start_page, start_offset, limit):
@@ -402,6 +445,7 @@ def collect_posts(api, start_page, start_offset, limit):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--source", required=True, choices=list(SOURCES))
     parser.add_argument("--full", action="store_true", help="resume full import: 100 posts per source per run")
     parser.add_argument("--reset", action="store_true", help="DANGER: delete catalog and thumbnails")
     parser.add_argument("--batch-size", type=int, default=100, help="posts per source per run (max 100)")
@@ -409,7 +453,7 @@ def main():
     if not 1 <= args.batch_size <= PER_PAGE:
         raise RuntimeError("--batch-size must be between 1 and 100 per source")
     if args.reset:
-        empty_catalog()
+        raise RuntimeError("Reset disabled in split-source sync: shared catalog protection")
     if not DATA.exists():
         atomic_json(DATA, {"version":"1.3", "updated":datetime.now(timezone.utc).isoformat(), "videos":[]})
     db = json.loads(DATA.read_text(encoding="utf-8"))
@@ -434,6 +478,7 @@ def main():
     next_num = max(numeric_ids or [0]) + 1
     additions = []
     for site, api in SOURCES.items():
+        if site != args.source: continue
         checkpoint = state["sources"].setdefault(site, {"active":False,"next_page":1,"next_offset":0,"scanned":0,"created":0})
         full = args.full or bool(checkpoint.get("active"))
         if args.full and not checkpoint.get("active") and int(checkpoint.get("next_page", 1)) == 1:
