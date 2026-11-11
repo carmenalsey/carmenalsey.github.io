@@ -59,7 +59,7 @@
   <!-- HEADER (SAMA HOMEPAGE) -->
   <header class="topbar">
 
-    <a href="index.html" class="logo">BuddieFun</a>
+    <a href="index.html" class="logo" aria-label="Buddie Fun — Home"><img src="assets/icon/logo.webp" alt="Buddie Fun" width="160" height="50"></a>
 
     <div class="search-box">
       <input
@@ -201,7 +201,7 @@
   <script>
     // Ubah judul tab berdasarkan judul video pada assets/data/videos.json.
     (async () => {
-      const fallbackTitle = "HyLooks";
+      const fallbackTitle = "BuddieFun";
       const params = new URLSearchParams(window.location.search);
       const videoId = params.get("id");
       if (!videoId) return;
