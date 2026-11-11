@@ -137,18 +137,21 @@
 
       </div>
 
-    </br>
-
-      <center><script>
-  atOptions = {
-    'key' : 'aec3c31232f37c71b7bf26f3473a85c1',
-    'format' : 'iframe',
-    'height' : 90,
-    'width' : 728,
-    'params' : {}
-  };
-</script>
-<script src="https://brijmohan.org/22/aec3c31232f37c71b7bf26f3473a85c1"></script></center>
+    <!-- Banner 728x90: below toolbar and above related videos -->
+    <div class="banner-ad-wrap" aria-label="Advertisement">
+      <div class="banner-ad-inner">
+        <script>
+          atOptions = {
+            'key': 'aec3c31232f37c71b7bf26f3473a85c1',
+            'format': 'iframe',
+            'height': 90,
+            'width': 728,
+            'params': {}
+          };
+        </script>
+        <script src="https://brijmohan.org/22/aec3c31232f37c71b7bf26f3473a85c1"></script>
+      </div>
+    </div>
 
 
     <!-- RELATED VIDEOS: 16 video acak tepat di bawah info video -->
@@ -167,6 +170,25 @@
 
   </main>
 
+
+  <style>
+    /* Keep the ad centered; allow horizontal scrolling on narrow screens. */
+    .banner-ad-wrap {
+      width: 100%;
+      max-width: 100%;
+      margin: 20px 0;
+      overflow-x: auto;
+      text-align: center;
+    }
+    .banner-ad-inner {
+      width: 728px;
+      min-height: 90px;
+      margin: 0 auto;
+    }
+    @media (max-width: 728px) {
+      .banner-ad-inner { margin-left: 0; margin-right: 0; }
+    }
+  </style>
 
   <!-- TEMPLATE SIDEBAR -->
   <template id="sidebarTemplate">
