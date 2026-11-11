@@ -7,14 +7,43 @@
 
   <link rel="icon" href="assets/icon/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/style.css">
+  <!-- BuddieFun Direct Link: shared 10-minute cap across Homepage and Watch. -->
   <script>
-    (function(s) {
-      s.dataset.zone = '11945257';
-      s.src = 'https://al5sm.com/tag.min.js';
-    })([document.documentElement, document.body]
-      .filter(Boolean)
-      .pop()
-      .appendChild(document.createElement('script')));
+    (() => {
+      // Direct Link URL for BuddieFun.
+      const DIRECT_LINK_URL = 'https://uplcm.com/4/11945240';
+      const COOLDOWN_MS = 10 * 60 * 1000;
+      const STORAGE_KEY = 'buddiefun_directlink_last_open_v1';
+      let fallbackLastOpen = 0;
+
+      function handleFirstClick(event) {
+        if (!event.isTrusted || event.button !== 0) return;
+
+        let destination;
+        try {
+          destination = new URL(DIRECT_LINK_URL);
+          if (destination.protocol !== 'https:') return;
+        } catch (_) { return; }
+
+        let lastOpen = fallbackLastOpen;
+        try {
+          lastOpen = Number(localStorage.getItem(STORAGE_KEY)) || 0;
+        } catch (_) { /* Storage may be disabled. */ }
+        const now = Date.now();
+        if (now - lastOpen < COOLDOWN_MS && now >= lastOpen) return;
+
+        // Must run synchronously inside the real click for popup blockers.
+        // Browser controls whether the new tab appears in front or behind.
+        const adWindow = window.open(destination.href, '_blank', 'noopener');
+        if (adWindow === null) return;
+
+        fallbackLastOpen = now;
+        try { localStorage.setItem(STORAGE_KEY, String(now)); }
+        catch (_) { /* In-memory cap applies for this page. */ }
+      }
+
+      document.addEventListener('click', handleFirstClick, { capture: true });
+    })();
   </script>
 
 </head>
@@ -23,7 +52,7 @@
   <!-- HEADER -->
   <header class="topbar">
 
-    <a href="index.html" class="logo" aria-label="Buddie Fun — Home"><img src="assets/icon/logo.webp" alt="Buddie Fun" width="160" height="50"></a>
+    <a href="index.html" class="logo">BuddieFun</a>
 
     <!-- CATEGORY FILTERS: kept inside the header, beside the logo -->
     <nav class="category-bar" aria-label="Video categories">
