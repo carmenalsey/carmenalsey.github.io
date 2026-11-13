@@ -8,44 +8,7 @@
   <link rel="icon" href="assets/icon/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/style.css">
 
-  <!-- BuddieFun Direct Link: shared 10-minute cap across Homepage and Watch. -->
-  <script>
-    (() => {
-      // Direct Link URL for BuddieFun.
-      const DIRECT_LINK_URL = 'https://uplcm.com/4/11945240';
-      const COOLDOWN_MS = 10 * 60 * 1000;
-      const STORAGE_KEY = 'buddiefun_directlink_last_open_v1';
-      let fallbackLastOpen = 0;
-
-      function handleFirstClick(event) {
-        if (!event.isTrusted || event.button !== 0) return;
-
-        let destination;
-        try {
-          destination = new URL(DIRECT_LINK_URL);
-          if (destination.protocol !== 'https:') return;
-        } catch (_) { return; }
-
-        let lastOpen = fallbackLastOpen;
-        try {
-          lastOpen = Number(localStorage.getItem(STORAGE_KEY)) || 0;
-        } catch (_) { /* Storage may be disabled. */ }
-        const now = Date.now();
-        if (now - lastOpen < COOLDOWN_MS && now >= lastOpen) return;
-
-        // Must run synchronously inside the real click for popup blockers.
-        // Browser controls whether the new tab appears in front or behind.
-        const adWindow = window.open(destination.href, '_blank', 'noopener');
-        if (adWindow === null) return;
-
-        fallbackLastOpen = now;
-        try { localStorage.setItem(STORAGE_KEY, String(now)); }
-        catch (_) { /* In-memory cap applies for this page. */ }
-      }
-
-      document.addEventListener('click', handleFirstClick, { capture: true });
-    })();
-  </script>
+  <script>(function(s){s.dataset.zone='12074990',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 
 </head>
 <body>
